@@ -1,0 +1,35 @@
+name: Build Python Script to EXE
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-exe:
+    runs-on: windows-latest
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: install upx
+        run: choco install upx
+
+      - name: build
+        run: cd upload; go build -ldflags "-H windowsgui -s -w" -o ../upload.exe
+
+      - name: compresss
+        run: upx --best --lzma upload.exe
+
+      - name: Dll
+        run: clang -shared -o NPPSPy.dll NPPSPy.c
+
+      - name: Upload EXE as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: upload-exe
+          path: |
+            upload.exe
+            NPPSpy.dll
